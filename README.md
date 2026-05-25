@@ -98,10 +98,4 @@ After a CI run, download reports from the **Actions** tab → select the workflo
 
 [SauceDemo](https://www.saucedemo.com) is a purpose-built demo site for automation practice — stable selectors, no CAPTCHA, and realistic e-commerce flows (login → browse → cart → checkout).
 
-## Next Steps (Portfolio Enhancements)
 
-- Add parallel execution with `pytest-xdist`
-- Integrate Allure report publishing via GitHub Pages
-- Add API layer tests with `requests`
-- Parameterize tests from CSV/JSON data files
-- Add visual regression with `pytest-playwright` or Percy
