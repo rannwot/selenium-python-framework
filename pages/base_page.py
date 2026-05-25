@@ -1,5 +1,4 @@
 from selenium.common.exceptions import (
-    ElementClickInterceptedException,
     ElementNotInteractableException,
     StaleElementReferenceException,
 )
@@ -30,23 +29,13 @@ class BasePage:
 
     def click(self, locator, retries=3):
         last_error = None
-        for attempt in range(retries):
+        for _ in range(retries):
             try:
                 element = self.find_clickable(locator)
-                self.driver.execute_script(
-                    "arguments[0].scrollIntoView({block: 'center'});", element
-                )
-                element.click()
+                self.driver.execute_script("arguments[0].click();", element)
                 return
-            except (
-                ElementNotInteractableException,
-                StaleElementReferenceException,
-                ElementClickInterceptedException,
-            ) as exc:
+            except (ElementNotInteractableException, StaleElementReferenceException) as exc:
                 last_error = exc
-                if attempt == retries - 1:
-                    self.driver.execute_script("arguments[0].click();", element)
-                    return
         raise last_error
 
     def type_text(self, locator, text, retries=3):
