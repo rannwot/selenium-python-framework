@@ -24,6 +24,4 @@ class CartPage(BasePage):
         return len(self.find_all(self.CART_LIST))
 
     def proceed_to_checkout(self):
-        element = self.find_clickable(self.CHECKOUT_BUTTON)
-        self.driver.execute_script("arguments[0].click();", element)
-        self.wait.until(EC.url_contains("checkout-step-one"))
+        self.navigation_click(self.CHECKOUT_BUTTON, "checkout-step-one")

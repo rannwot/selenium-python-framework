@@ -1,6 +1,7 @@
 from selenium.common.exceptions import (
     ElementNotInteractableException,
     StaleElementReferenceException,
+    TimeoutException,
 )
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -37,6 +38,23 @@ class BasePage:
             except (ElementNotInteractableException, StaleElementReferenceException) as exc:
                 last_error = exc
         raise last_error
+
+    def navigation_click(self, locator, url_fragment, retries=3, retry_wait=5):
+        """Click a navigation element and confirm URL changes, retrying if needed.
+
+        Retries are needed because headless Chrome sometimes fires the click
+        event without the SPA responding on the first attempt.
+        """
+        short_wait = WebDriverWait(self.driver, retry_wait)
+        for attempt in range(retries):
+            element = self.find_clickable(locator)
+            self.driver.execute_script("arguments[0].click();", element)
+            try:
+                short_wait.until(EC.url_contains(url_fragment))
+                return
+            except TimeoutException:
+                if attempt == retries - 1:
+                    raise
 
     def type_text(self, locator, text, retries=3):
         last_error = None

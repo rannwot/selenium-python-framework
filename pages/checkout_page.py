@@ -43,11 +43,10 @@ class CheckoutPage(BasePage):
             self.type_text(self.LAST_NAME, last_name)
         if postal_code:
             self.type_text(self.POSTAL_CODE, postal_code)
-        self.click(self.CONTINUE_BUTTON)
-
         if first_name and last_name and postal_code:
-            self.wait_for_overview_step()
+            self.navigation_click(self.CONTINUE_BUTTON, "checkout-step-two")
         else:
+            self.click(self.CONTINUE_BUTTON)
             self.wait.until(EC.visibility_of_element_located(self.ERROR_MESSAGE))
 
     def get_overview_title(self):
@@ -61,8 +60,7 @@ class CheckoutPage(BasePage):
 
     def finish_order(self):
         self.wait_for_overview_step()
-        self.click(self.FINISH_BUTTON)
-        self.wait.until(EC.url_contains("checkout-complete"))
+        self.navigation_click(self.FINISH_BUTTON, "checkout-complete")
         self.wait.until(
             EC.text_to_be_present_in_element(
                 self.COMPLETE_HEADER, "Thank you for your order!"
