@@ -28,9 +28,13 @@ class TestCheckout:
     @allure.severity(allure.severity_level.NORMAL)
     def test_multi_item_checkout(self, logged_in_inventory, cart_page, checkout_page):
         inventory = logged_in_inventory
-        inventory.add_product_to_cart_by_index(0)
-        inventory.add_product_to_cart_by_index(1)
-        inventory.add_product_to_cart_by_index(2)
+        products = [
+            "Sauce Labs Backpack",
+            "Sauce Labs Bike Light",
+            "Sauce Labs Bolt T-Shirt",
+        ]
+        for product in products:
+            inventory.add_product_to_cart_by_name(product)
 
         assert inventory.get_cart_item_count() == 3
         inventory.go_to_cart()

@@ -38,11 +38,24 @@ class InventoryPage(BasePage):
         dropdown = self.find(self.SORT_DROPDOWN)
         Select(dropdown).select_by_visible_text(self.SORT_OPTIONS[option_key])
 
+    def get_cart_item_count(self):
+        badges = self.driver.find_elements(*self.CART_BADGE)
+        if badges and badges[0].is_displayed():
+            return int(badges[0].text)
+        return 0
+
+    def wait_for_cart_count(self, expected):
+        self.wait.until(lambda _: self.get_cart_item_count() == expected)
+
     def add_product_to_cart_by_index(self, index=0):
+        expected = self.get_cart_item_count() + 1
         buttons = self.find_all(self.ADD_TO_CART_BUTTONS)
-        buttons[index].click()
+        data_test = buttons[index].get_attribute("data-test")
+        self.click((By.CSS_SELECTOR, f"[data-test='{data_test}']"))
+        self.wait_for_cart_count(expected)
 
     def add_product_to_cart_by_name(self, product_name):
+        expected = self.get_cart_item_count() + 1
         add_button = (
             By.XPATH,
             f"//div[contains(@class,'inventory_item')]"
@@ -50,11 +63,8 @@ class InventoryPage(BasePage):
             f"//button[contains(@data-test,'add-to-cart')]",
         )
         self.click(add_button)
-
-    def get_cart_item_count(self):
-        if self.is_visible(self.CART_BADGE):
-            return int(self.get_text(self.CART_BADGE))
-        return 0
+        self.wait_for_cart_count(expected)
 
     def go_to_cart(self):
         self.click(self.CART_LINK)
+        self.wait.until(lambda driver: "cart" in driver.current_url)

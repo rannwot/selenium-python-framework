@@ -38,15 +38,12 @@ class TestSearch:
 
     @allure.title("Find product by name and add to cart")
     @allure.severity(allure.severity_level.CRITICAL)
-    def test_find_product_and_add_to_cart(self, logged_in_inventory):
+    def test_find_product_and_add_to_cart(self, logged_in_inventory, cart_page):
         inventory = logged_in_inventory
         product_name = "Sauce Labs Backpack"
         inventory.add_product_to_cart_by_name(product_name)
         assert inventory.get_cart_item_count() == 1
 
         inventory.go_to_cart()
-        from pages.cart_page import CartPage
-
-        cart = CartPage(inventory.driver)
-        assert cart.is_loaded()
-        assert product_name in cart.get_cart_item_names()
+        assert cart_page.is_loaded()
+        assert product_name in cart_page.get_cart_item_names()

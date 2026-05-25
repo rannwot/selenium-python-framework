@@ -1,3 +1,4 @@
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -18,8 +19,20 @@ class CheckoutPage(BasePage):
     ERROR_MESSAGE = (By.CSS_SELECTOR, "[data-test='error']")
 
     def wait_for_info_step(self):
+        self.wait.until(EC.url_contains("checkout-step-one"))
+        self.wait.until(EC.visibility_of_element_located(self.FIRST_NAME))
         self.wait.until(
-            lambda _: self.get_text(self.INFO_STEP_TITLE) == "Checkout: Your Information"
+            EC.text_to_be_present_in_element(
+                self.INFO_STEP_TITLE, "Checkout: Your Information"
+            )
+        )
+
+    def wait_for_overview_step(self):
+        self.wait.until(EC.url_contains("checkout-step-two"))
+        self.wait.until(
+            EC.text_to_be_present_in_element(
+                self.OVERVIEW_TITLE, "Checkout: Overview"
+            )
         )
 
     def fill_shipping_info(self, first_name, last_name, postal_code):
@@ -33,16 +46,16 @@ class CheckoutPage(BasePage):
         self.click(self.CONTINUE_BUTTON)
 
     def get_overview_title(self):
+        self.wait_for_overview_step()
         return self.get_text(self.OVERVIEW_TITLE)
 
     def get_subtotal(self):
+        self.wait_for_overview_step()
         text = self.get_text(self.SUBTOTAL)
         return float(text.split("$")[1])
 
     def finish_order(self):
-        self.wait.until(
-            lambda _: self.get_text(self.OVERVIEW_TITLE) == "Checkout: Overview"
-        )
+        self.wait_for_overview_step()
         self.click(self.FINISH_BUTTON)
         self.wait.until(EC.visibility_of_element_located(self.COMPLETE_HEADER))
 
@@ -50,7 +63,11 @@ class CheckoutPage(BasePage):
         return self.get_text(self.COMPLETE_HEADER)
 
     def is_error_displayed(self):
-        return self.is_visible(self.ERROR_MESSAGE)
+        try:
+            self.wait.until(EC.visibility_of_element_located(self.ERROR_MESSAGE))
+            return True
+        except TimeoutException:
+            return False
 
     def get_error_message(self):
         return self.get_text(self.ERROR_MESSAGE)
