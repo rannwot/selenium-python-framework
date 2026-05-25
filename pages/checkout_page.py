@@ -43,10 +43,13 @@ class CheckoutPage(BasePage):
             self.type_text(self.LAST_NAME, last_name)
         if postal_code:
             self.type_text(self.POSTAL_CODE, postal_code)
+        # Use native WebDriver click (isTrusted=true) for <input type="submit">.
+        # JS execute_script click is untrusted and Chrome on Linux silently
+        # refuses to submit the form for untrusted synthetic click events.
+        self.find_clickable(self.CONTINUE_BUTTON).click()
         if first_name and last_name and postal_code:
-            self.navigation_click(self.CONTINUE_BUTTON, "checkout-step-two")
+            self.wait.until(EC.url_contains("checkout-step-two"))
         else:
-            self.click(self.CONTINUE_BUTTON)
             self.wait.until(EC.visibility_of_element_located(self.ERROR_MESSAGE))
 
     def get_overview_title(self):
@@ -60,7 +63,8 @@ class CheckoutPage(BasePage):
 
     def finish_order(self):
         self.wait_for_overview_step()
-        self.navigation_click(self.FINISH_BUTTON, "checkout-complete")
+        self.find_clickable(self.FINISH_BUTTON).click()
+        self.wait.until(EC.url_contains("checkout-complete"))
         self.wait.until(
             EC.text_to_be_present_in_element(
                 self.COMPLETE_HEADER, "Thank you for your order!"
