@@ -41,8 +41,17 @@ jobs:
           PYTEST_EXIT=${PIPESTATUS[0]}
           echo '### Pytest results' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          tail -60 /tmp/pytest-out.txt >> $GITHUB_STEP_SUMMARY
+          tail -80 /tmp/pytest-out.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+          if [ -f reports/ci-debug.txt ]; then
+            echo '### Browser state at failure' >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat reports/ci-debug.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "::group::Browser debug"
+            cat reports/ci-debug.txt | while IFS= read -r line; do echo "::notice::$line"; done
+            echo "::endgroup::"
+          fi
           exit $PYTEST_EXIT
 
       - name: Upload pytest-html report
