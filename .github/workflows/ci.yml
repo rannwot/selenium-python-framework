@@ -36,7 +36,14 @@ jobs:
           CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
           CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
           DEFAULT_TIMEOUT: "60"
-        run: pytest --headless --tb=short
+        run: |
+          pytest --headless --tb=short -v 2>&1 | tee /tmp/pytest-out.txt
+          PYTEST_EXIT=${PIPESTATUS[0]}
+          echo '### Pytest results' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -60 /tmp/pytest-out.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          exit $PYTEST_EXIT
 
       - name: Upload pytest-html report
         if: always()
