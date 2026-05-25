@@ -39,22 +39,27 @@ class BasePage:
                 last_error = exc
         raise last_error
 
-    def navigation_click(self, locator, url_fragment, retries=3, retry_wait=5):
+    def navigation_click(self, locator, url_fragment, retries=3, retry_wait=15):
         """Click a navigation element and confirm URL changes, retrying if needed.
 
-        Retries are needed because headless Chrome sometimes fires the click
-        event without the SPA responding on the first attempt.
+        Uses a short per-attempt window so a slow page load that outlasts
+        retry_wait is detected (via the URL check at the top of each loop)
+        before a stale-locator re-click is attempted on the wrong page.
         """
         short_wait = WebDriverWait(self.driver, retry_wait)
         for attempt in range(retries):
+            if url_fragment in self.driver.current_url:
+                return  # already navigated (slow load finished between retries)
             element = self.find_clickable(locator)
             self.driver.execute_script("arguments[0].click();", element)
             try:
                 short_wait.until(EC.url_contains(url_fragment))
                 return
             except TimeoutException:
+                if url_fragment in self.driver.current_url:
+                    return  # navigation completed during the wait window
                 if attempt == retries - 1:
-                    raise
+                    self.wait.until(EC.url_contains(url_fragment))
 
     def type_text(self, locator, text, retries=3):
         last_error = None
