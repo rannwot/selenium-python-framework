@@ -1,11 +1,13 @@
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from utils.config import DEFAULT_TIMEOUT
+
 
 class BasePage:
     """Shared WebDriver helpers for all page objects."""
 
-    def __init__(self, driver, timeout=10):
+    def __init__(self, driver, timeout=DEFAULT_TIMEOUT):
         self.driver = driver
         self.wait = WebDriverWait(driver, timeout)
 

@@ -1,6 +1,10 @@
+import os
+import shutil
+
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 from pages.cart_page import CartPage
 from pages.checkout_page import CheckoutPage
@@ -20,7 +24,18 @@ def driver(request):
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
 
-    browser = webdriver.Chrome(options=options)
+    chrome_bin = os.getenv("CHROME_BIN")
+    if chrome_bin:
+        options.binary_location = chrome_bin
+
+    chromedriver_path = os.getenv("CHROMEDRIVER_PATH") or shutil.which("chromedriver")
+    if chromedriver_path:
+        browser = webdriver.Chrome(
+            service=Service(chromedriver_path), options=options
+        )
+    else:
+        browser = webdriver.Chrome(options=options)
+
     browser.implicitly_wait(0)
     yield browser
     browser.quit()

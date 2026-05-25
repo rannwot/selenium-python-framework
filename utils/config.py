@@ -1,5 +1,7 @@
 """Central configuration for the SauceDemo automation framework."""
 
+import os
+
 BASE_URL = "https://www.saucedemo.com"
 
 # Standard SauceDemo test accounts
@@ -12,4 +14,4 @@ USERS = {
 
 PASSWORD = "secret_sauce"
 
-DEFAULT_TIMEOUT = 10
+DEFAULT_TIMEOUT = int(os.getenv("DEFAULT_TIMEOUT", "10"))
