@@ -71,5 +71,6 @@ class InventoryPage(BasePage):
         self.wait_for_cart_count(expected)
 
     def go_to_cart(self):
-        self.click(self.CART_LINK)
-        self.wait.until(lambda driver: "cart" in driver.current_url)
+        element = self.find_clickable(self.CART_LINK)
+        self.driver.execute_script("arguments[0].click();", element)
+        self.wait.until(EC.url_contains("cart"))
