@@ -41,6 +41,23 @@ def driver(request):
     browser.quit()
 
 
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    rep = outcome.get_result()
+    if rep.when == "call" and rep.failed:
+        driver = item.funcargs.get("driver")
+        if driver:
+            try:
+                os.makedirs("reports", exist_ok=True)
+                with open("reports/ci-debug.txt", "a") as f:
+                    f.write(f"FAILED: {item.nodeid}\n")
+                    f.write(f"  url:   {driver.current_url}\n")
+                    f.write(f"  title: {driver.title}\n\n")
+            except Exception:
+                pass
+
+
 def pytest_addoption(parser):
     parser.addoption(
         "--headless",

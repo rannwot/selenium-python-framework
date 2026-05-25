@@ -54,6 +54,15 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Upload CI debug log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-debug
+          path: reports/ci-debug.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Upload Allure results
         if: always()
         uses: actions/upload-artifact@v4
