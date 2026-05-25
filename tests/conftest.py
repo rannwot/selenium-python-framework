@@ -74,5 +74,6 @@ def checkout_page(driver):
 def logged_in_inventory(login_page, inventory_page):
     """Log in with the standard user and return the inventory page."""
     login_page.open().login(USERS["standard"], PASSWORD)
-    assert inventory_page.is_loaded(), "Inventory page did not load after login"
+    login_page.wait_for_inventory_redirect()
+    inventory_page.wait_until_loaded()
     return inventory_page

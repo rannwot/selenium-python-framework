@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 from pages.base_page import BasePage
 
@@ -19,8 +20,12 @@ class InventoryPage(BasePage):
         "price_desc": "Price (high to low)",
     }
 
+    def wait_until_loaded(self):
+        self.wait.until(EC.visibility_of_element_located(self.INVENTORY_CONTAINER))
+
     def is_loaded(self):
-        return self.is_visible(self.INVENTORY_CONTAINER)
+        self.wait_until_loaded()
+        return True
 
     def get_product_names(self):
         return [el.text for el in self.find_all(self.PRODUCT_NAMES)]

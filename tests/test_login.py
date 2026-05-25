@@ -11,7 +11,8 @@ class TestLogin:
     @allure.severity(allure.severity_level.CRITICAL)
     def test_valid_login(self, login_page, inventory_page):
         login_page.open().login(USERS["standard"], PASSWORD)
-        assert inventory_page.is_loaded()
+        login_page.wait_for_inventory_redirect()
+        inventory_page.wait_until_loaded()
         assert "Sauce Labs Backpack" in inventory_page.get_product_names()
 
     @allure.title("Invalid credentials show an error message")

@@ -35,8 +35,8 @@ jobs:
         env:
           CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
           CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
-          DEFAULT_TIMEOUT: "30"
-        run: pytest --headless -v --tb=short --reruns 1 --reruns-delay 3
+          DEFAULT_TIMEOUT: "60"
+        run: pytest --headless --tb=short
 
       - name: Upload pytest-html report
         if: always()

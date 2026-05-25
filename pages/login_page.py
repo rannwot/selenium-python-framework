@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 from pages.base_page import BasePage
 from utils.config import BASE_URL
@@ -18,6 +19,9 @@ class LoginPage(BasePage):
         self.type_text(self.USERNAME, username)
         self.type_text(self.PASSWORD, password)
         self.click(self.LOGIN_BUTTON)
+
+    def wait_for_inventory_redirect(self):
+        self.wait.until(lambda driver: "inventory" in driver.current_url)
 
     def get_error_message(self):
         return self.get_text(self.ERROR_MESSAGE)
