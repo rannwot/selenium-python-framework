@@ -1,3 +1,7 @@
+from selenium.common.exceptions import (
+    ElementNotInteractableException,
+    StaleElementReferenceException,
+)
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -23,17 +27,35 @@ class BasePage:
     def find_all(self, locator):
         return self.wait.until(EC.presence_of_all_elements_located(locator))
 
-    def click(self, locator):
-        self.find_clickable(locator).click()
+    def click(self, locator, retries=3):
+        last_error = None
+        for _ in range(retries):
+            try:
+                element = self.find_clickable(locator)
+                self.driver.execute_script(
+                    "arguments[0].scrollIntoView({block: 'center'});", element
+                )
+                element.click()
+                return
+            except (ElementNotInteractableException, StaleElementReferenceException) as exc:
+                last_error = exc
+        raise last_error
 
-    def type_text(self, locator, text):
-        element = self.wait.until(EC.element_to_be_clickable(locator))
-        self.driver.execute_script(
-            "arguments[0].scrollIntoView({block: 'center'});", element
-        )
-        element.click()
-        element.clear()
-        element.send_keys(text)
+    def type_text(self, locator, text, retries=3):
+        last_error = None
+        for _ in range(retries):
+            try:
+                element = self.find_clickable(locator)
+                self.driver.execute_script(
+                    "arguments[0].scrollIntoView({block: 'center'});", element
+                )
+                element.click()
+                element.clear()
+                element.send_keys(text)
+                return
+            except (ElementNotInteractableException, StaleElementReferenceException) as exc:
+                last_error = exc
+        raise last_error
 
     def get_text(self, locator):
         return self.find(locator).text

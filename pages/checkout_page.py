@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 from pages.base_page import BasePage
 
@@ -39,7 +40,11 @@ class CheckoutPage(BasePage):
         return float(text.split("$")[1])
 
     def finish_order(self):
+        self.wait.until(
+            lambda _: self.get_text(self.OVERVIEW_TITLE) == "Checkout: Overview"
+        )
         self.click(self.FINISH_BUTTON)
+        self.wait.until(EC.visibility_of_element_located(self.COMPLETE_HEADER))
 
     def get_completion_message(self):
         return self.get_text(self.COMPLETE_HEADER)
