@@ -52,9 +52,25 @@ class BasePage:
                 self.driver.execute_script(
                     "arguments[0].scrollIntoView({block: 'center'});", element
                 )
-                element.click()
-                element.clear()
-                element.send_keys(text)
+                # Use the native HTMLInputElement value setter so React's
+                # synthetic event system picks up the change.  element.clear()
+                # only triggers a WebDriver-level reset that does NOT fire the
+                # 'input' event React listens to — causing React state to stay
+                # empty in headless Chrome on Linux (CI), so form validation
+                # then rejects the "empty" submit.
+                self.driver.execute_script(
+                    """
+                    var el = arguments[0], val = arguments[1];
+                    var setter = Object.getOwnPropertyDescriptor(
+                        window.HTMLInputElement.prototype, 'value'
+                    ).set;
+                    setter.call(el, val);
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                    """,
+                    element,
+                    text,
+                )
                 return
             except (ElementNotInteractableException, StaleElementReferenceException) as exc:
                 last_error = exc

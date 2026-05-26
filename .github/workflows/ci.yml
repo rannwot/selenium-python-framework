@@ -37,7 +37,7 @@ jobs:
           CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
           DEFAULT_TIMEOUT: "60"
         run: |
-          pytest --headless --tb=short -v --reruns 2 --reruns-delay 3 2>&1 | tee /tmp/pytest-out.txt
+          pytest --headless --tb=short -v --reruns 1 --reruns-delay 2 2>&1 | tee /tmp/pytest-out.txt
           PYTEST_EXIT=${PIPESTATUS[0]}
           echo '### Pytest results' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
@@ -48,9 +48,6 @@ jobs:
             echo '```' >> $GITHUB_STEP_SUMMARY
             cat reports/ci-debug.txt >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-            echo "::group::Browser debug"
-            cat reports/ci-debug.txt | while IFS= read -r line; do echo "::notice::$line"; done
-            echo "::endgroup::"
           fi
           exit $PYTEST_EXIT
 
