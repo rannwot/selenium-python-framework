@@ -34,12 +34,26 @@ class CheckoutPage(BasePage):
 
     def fill_shipping_info(self, first_name, last_name, postal_code):
         self.wait_for_info_step()
-        if first_name:
-            self.type_text(self.FIRST_NAME, first_name)
-        if last_name:
-            self.type_text(self.LAST_NAME, last_name)
-        if postal_code:
-            self.type_text(self.POSTAL_CODE, postal_code)
+        self.driver.execute_script(
+            """
+            function setVal(sel, val) {
+                if (!val) return;
+                var el = document.querySelector(sel);
+                var setter = Object.getOwnPropertyDescriptor(
+                    window.HTMLInputElement.prototype, 'value'
+                ).set;
+                setter.call(el, val);
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            setVal("[data-test='firstName']", arguments[0]);
+            setVal("[data-test='lastName']", arguments[1]);
+            setVal("[data-test='postalCode']", arguments[2]);
+            """,
+            first_name,
+            last_name,
+            postal_code,
+        )
         self.find_clickable(self.CONTINUE_BUTTON).click()
         if first_name and last_name and postal_code:
             self.wait.until(EC.url_contains("checkout-step-two"))
