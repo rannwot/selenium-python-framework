@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
 
 from pages.base_page import BasePage
 
@@ -31,15 +32,12 @@ class InventoryPage(BasePage):
         return [el.text for el in self.find_all(self.PRODUCT_NAMES)]
 
     def get_product_prices(self):
-        prices = []
-        for el in self.find_all(self.PRODUCT_PRICES):
-            value = el.text.replace("$", "").strip()
-            prices.append(float(value))
-        return prices
+        return [
+            float(el.text.replace("$", "").strip())
+            for el in self.find_all(self.PRODUCT_PRICES)
+        ]
 
     def sort_by(self, option_key):
-        from selenium.webdriver.support.ui import Select
-
         dropdown = self.find(self.SORT_DROPDOWN)
         Select(dropdown).select_by_visible_text(self.SORT_OPTIONS[option_key])
 

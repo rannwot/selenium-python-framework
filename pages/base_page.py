@@ -1,6 +1,7 @@
 from selenium.common.exceptions import (
     ElementNotInteractableException,
     StaleElementReferenceException,
+    TimeoutException,
 )
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -9,8 +10,6 @@ from utils.config import DEFAULT_TIMEOUT
 
 
 class BasePage:
-    """Shared WebDriver helpers for all page objects."""
-
     def __init__(self, driver, timeout=DEFAULT_TIMEOUT):
         self.driver = driver
         self.wait = WebDriverWait(driver, timeout)
@@ -27,54 +26,48 @@ class BasePage:
     def find_all(self, locator):
         return self.wait.until(EC.presence_of_all_elements_located(locator))
 
-    def click(self, locator, retries=3):
+    def _retry(self, action, retries=3):
         last_error = None
         for _ in range(retries):
             try:
-                element = self.find_clickable(locator)
-                self.driver.execute_script("arguments[0].click();", element)
-                return
+                return action()
             except (ElementNotInteractableException, StaleElementReferenceException) as exc:
                 last_error = exc
         raise last_error
 
+    def click(self, locator, retries=3):
+        def attempt():
+            element = self.find_clickable(locator)
+            self.driver.execute_script("arguments[0].click();", element)
+
+        self._retry(attempt, retries)
+
     def navigation_click(self, locator, url_fragment):
-        """Click a navigation element and wait for URL to contain url_fragment."""
         element = self.find_clickable(locator)
         self.driver.execute_script("arguments[0].click();", element)
         self.wait.until(EC.url_contains(url_fragment))
 
     def type_text(self, locator, text, retries=3):
-        last_error = None
-        for _ in range(retries):
-            try:
-                element = self.find_clickable(locator)
-                self.driver.execute_script(
-                    "arguments[0].scrollIntoView({block: 'center'});", element
-                )
-                # Use the native HTMLInputElement value setter so React's
-                # synthetic event system picks up the change.  element.clear()
-                # only triggers a WebDriver-level reset that does NOT fire the
-                # 'input' event React listens to — causing React state to stay
-                # empty in headless Chrome on Linux (CI), so form validation
-                # then rejects the "empty" submit.
-                self.driver.execute_script(
-                    """
-                    var el = arguments[0], val = arguments[1];
-                    var setter = Object.getOwnPropertyDescriptor(
-                        window.HTMLInputElement.prototype, 'value'
-                    ).set;
-                    setter.call(el, val);
-                    el.dispatchEvent(new Event('input', { bubbles: true }));
-                    el.dispatchEvent(new Event('change', { bubbles: true }));
-                    """,
-                    element,
-                    text,
-                )
-                return
-            except (ElementNotInteractableException, StaleElementReferenceException) as exc:
-                last_error = exc
-        raise last_error
+        def attempt():
+            element = self.find_clickable(locator)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", element
+            )
+            self.driver.execute_script(
+                """
+                var el = arguments[0], val = arguments[1];
+                var setter = Object.getOwnPropertyDescriptor(
+                    window.HTMLInputElement.prototype, 'value'
+                ).set;
+                setter.call(el, val);
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+                """,
+                element,
+                text,
+            )
+
+        self._retry(attempt, retries)
 
     def get_text(self, locator):
         return self.find(locator).text
@@ -83,5 +76,5 @@ class BasePage:
         try:
             self.wait.until(EC.visibility_of_element_located(locator))
             return True
-        except Exception:
+        except TimeoutException:
             return False

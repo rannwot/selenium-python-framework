@@ -15,7 +15,6 @@ from utils.config import PASSWORD, USERS
 
 @pytest.fixture(scope="function")
 def driver(request):
-    """Create a fresh Chrome WebDriver for each test."""
     options = Options()
     if request.config.getoption("--headless"):
         options.add_argument("--headless=new")
@@ -89,7 +88,6 @@ def checkout_page(driver):
 
 @pytest.fixture
 def logged_in_inventory(login_page, inventory_page):
-    """Log in with the standard user and return the inventory page."""
     login_page.open().login(USERS["standard"], PASSWORD)
     login_page.wait_for_inventory_redirect()
     inventory_page.wait_until_loaded()

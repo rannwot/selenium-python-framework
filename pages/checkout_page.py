@@ -12,8 +12,7 @@ class CheckoutPage(BasePage):
     CONTINUE_BUTTON = (By.CSS_SELECTOR, "[data-test='continue']")
     FINISH_BUTTON = (By.CSS_SELECTOR, "[data-test='finish']")
     CANCEL_BUTTON = (By.CSS_SELECTOR, "[data-test='cancel']")
-    INFO_STEP_TITLE = (By.CSS_SELECTOR, "[data-test='title']")
-    OVERVIEW_TITLE = (By.CSS_SELECTOR, "[data-test='title']")
+    TITLE = (By.CSS_SELECTOR, "[data-test='title']")
     COMPLETE_HEADER = (By.CSS_SELECTOR, "[data-test='complete-header']")
     SUBTOTAL = (By.CSS_SELECTOR, "[data-test='subtotal-label']")
     ERROR_MESSAGE = (By.CSS_SELECTOR, "[data-test='error']")
@@ -23,16 +22,14 @@ class CheckoutPage(BasePage):
         self.wait.until(EC.visibility_of_element_located(self.FIRST_NAME))
         self.wait.until(
             EC.text_to_be_present_in_element(
-                self.INFO_STEP_TITLE, "Checkout: Your Information"
+                self.TITLE, "Checkout: Your Information"
             )
         )
 
     def wait_for_overview_step(self):
         self.wait.until(EC.url_contains("checkout-step-two"))
         self.wait.until(
-            EC.text_to_be_present_in_element(
-                self.OVERVIEW_TITLE, "Checkout: Overview"
-            )
+            EC.text_to_be_present_in_element(self.TITLE, "Checkout: Overview")
         )
 
     def fill_shipping_info(self, first_name, last_name, postal_code):
@@ -43,9 +40,6 @@ class CheckoutPage(BasePage):
             self.type_text(self.LAST_NAME, last_name)
         if postal_code:
             self.type_text(self.POSTAL_CODE, postal_code)
-        # Use native WebDriver click (isTrusted=true) for <input type="submit">.
-        # JS execute_script click is untrusted and Chrome on Linux silently
-        # refuses to submit the form for untrusted synthetic click events.
         self.find_clickable(self.CONTINUE_BUTTON).click()
         if first_name and last_name and postal_code:
             self.wait.until(EC.url_contains("checkout-step-two"))
@@ -54,7 +48,7 @@ class CheckoutPage(BasePage):
 
     def get_overview_title(self):
         self.wait_for_overview_step()
-        return self.get_text(self.OVERVIEW_TITLE)
+        return self.get_text(self.TITLE)
 
     def get_subtotal(self):
         self.wait_for_overview_step()
